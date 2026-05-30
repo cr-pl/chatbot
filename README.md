@@ -1,33 +1,46 @@
-# Local AI Chatbot with Ollama
+# Local AI Chatbot
 
-A lightweight local chatbot: a Node.js backend and a simple web UI that talk to an AI model on your machine through [Ollama](https://ollama.com/). No cloud API keys, no external services — everything runs on your computer.
+A lightweight chatbot with a Node.js backend and a simple web UI. Use models **locally** via [Ollama](https://ollama.com/), **in the cloud** via external APIs (Groq, OpenAI, Gemini), or switch between them from **Settings**.
 
 ## Features
 
 - Web chat interface with conversation history
-- Connection health check and **Settings** panel: choose **provider** (Ollama, Groq, OpenAI, Gemini) and **model**
-- External providers appear only when their API key is set in `.env` (empty key = hidden from the list)
-- Default Ollama model and URL via environment variables; last provider/model choice saved in the browser
-- Works with any model available in the [Ollama library](https://ollama.com/library)
+- **Multiple providers** — Ollama (local) plus Groq, OpenAI, and Gemini when configured
+- **Settings** panel: pick **provider** and **model**; choice is saved in the browser
+- External providers appear in the list **only** when their API key is set in `.env` (empty key = hidden)
+- **Ollama** — no API key; models from your machine (`ollama list`)
+- **Groq / OpenAI / Gemini** — cloud APIs; models loaded from the provider when the key is valid
+- Default Ollama model and URL via environment variables
 - **Desktop mode** — standalone window via Electron (no browser tab)
 
 ## Quick start
 
-If you already have Node.js 18+ and Ollama installed:
+If you already have **Node.js 18+**:
 
 ```bash
-# 1. Pull a model (recommended for modest laptops)
-ollama pull qwen2.5:1.5b
-
-# 2. Configure the app
+# 1. Configure the app
 cp .env.example .env   # Windows: copy .env.example .env
 
-# 3. Install and run
+# 2. Install dependencies
 npm install
+
+# 3. (Optional) Local models via Ollama
+ollama pull qwen2.5:1.5b
+
+# 4. (Optional) External provider — add a non-empty key to .env, e.g.:
+#    GROQ_API_KEY=your-groq-key
+
+# 5. Start
 npm start
 ```
 
-Open [http://localhost:8086](http://localhost:8086) (or the port set in your `.env` file).
+Open [http://localhost:8086](http://localhost:8086) (or the port in `.env`), then **Settings** (gear icon) → choose **Provider** and **Model**.
+
+| You want… | What to set up |
+|-----------|----------------|
+| Local only | Ollama running + `ollama pull <model>` |
+| Cloud only (e.g. Groq) | `GROQ_API_KEY=...` in `.env` (no Ollama required to chat) |
+| Both | Ollama + one or more API keys; switch anytime in Settings |
 
 For a **standalone desktop window** (starts the server automatically):
 
@@ -60,12 +73,12 @@ npm run dev
 
 ## Requirements
 
-| Tool | Version |
-|------|---------|
-| Node.js | 18 or newer |
-| npm | included with Node.js |
-| Ollama | latest from [ollama.com](https://ollama.com/) |
-| A local model | e.g. `qwen2.5:1.5b` |
+| Tool | Required for | Notes |
+|------|----------------|-------|
+| Node.js 18+ | Always | — |
+| npm | Always | included with Node.js |
+| [Ollama](https://ollama.com/) | Local provider | Always listed in Settings; needs a pulled model to chat |
+| API key in `.env` | Groq / OpenAI / Gemini | `GROQ_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` — provider hidden if empty |
 
 Verify your setup:
 
@@ -81,16 +94,27 @@ ollama --version
 
 ```mermaid
 flowchart LR
-  Browser["Browser\n(public/)"] -->|POST /api/chat| Server["Express server\n(server.js)"]
-  Browser -->|GET /api/health| Server
-  Server -->|Ollama API| Ollama["Ollama\nlocalhost:11434"]
-  Ollama --> Model["Local AI model"]
+  UI["Browser or\nElectron window"] -->|POST /api/chat| Server["Express server\n(server.js + providers.js)"]
+  UI -->|GET /api/health| Server
+  UI -->|POST /api/settings| Server
+  Server -->|local| Ollama["Ollama\nlocalhost:11434"]
+  Server -->|API key| Groq["Groq API"]
+  Server -->|API key| OpenAI["OpenAI API"]
+  Server -->|API key| Gemini["Gemini API"]
+  Ollama --> LocalModel["Local model"]
+  Groq --> CloudModel["Cloud model"]
+  OpenAI --> CloudModel
+  Gemini --> CloudModel
 ```
 
-1. The browser loads the static UI from `public/`.
-2. Each message is sent to `POST /api/chat` with the conversation history.
-3. The server forwards the request to Ollama's chat API.
-4. Ollama runs the configured model locally and returns the reply.
+1. The UI loads from `public/` (browser or Electron desktop window).
+2. **Settings** loads available **providers** and **models** via `GET /api/health`. Only providers with a valid API key in `.env` are listed (except **Ollama**, which is always available locally).
+3. You pick provider + model in Settings; the choice is sent to `POST /api/settings` and saved in the browser.
+4. Each chat message goes to `POST /api/chat` with the conversation history, provider, and model.
+5. The server routes the request through `providers.js`:
+   - **Ollama** — local API at `OLLAMA_URL` (no cloud, no API key)
+   - **Groq / OpenAI / Gemini** — external APIs using `GROQ_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` from `.env`
+6. The reply is returned to the UI and shown in the chat.
 
 In **desktop mode**, Electron opens the same UI in its own window instead of a browser tab.
 
