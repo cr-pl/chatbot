@@ -1,0 +1,25 @@
+{
+  "name": "local-ai-chatbot",
+  "version": "1.0.0",
+  "description": "Full functional chatbot connected to a local AI model through Ollama",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "desktop": "electron .",
+    "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/create-desktop-shortcut.ps1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.3"
+  },
+  "devDependencies": {
+    "electron": "^35.1.5",
+    "nodemon": "^3.1.9"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
