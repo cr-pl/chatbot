@@ -68,25 +68,73 @@
           </button>
 
           <div class="chat-header-main">
+            <h1 id="conversationTitle">New chat</h1>
             <p id="status">Checking connection...</p>
           </div>
         </div>
+
+        <div class="header-actions">
+          <button
+            type="button"
+            id="newConversationButton"
+            class="icon-button"
+            aria-label="New conversation"
+            title="New conversation"
+          >
+            <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+              <path fill="currentColor" d="M19 11h-6V5a1 1 0 1 0-2 0v6H5a1 1 0 1 0 0 2h6v6a1 1 0 1 0 2 0v-6h6a1 1 0 1 0 0-2z"/>
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            id="deleteConversationButton"
+            class="icon-button"
+            aria-label="Delete conversation"
+            title="Delete conversation"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path fill="currentColor" d="M9 3a1 1 0 0 0-1 1v1H5a1 1 0 1 0 0 2h1v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7h1a1 1 0 1 0 0-2h-3V4a1 1 0 0 0-1-1H9zm1 2h4v1h-4V5zm-2 2h8v12H8V7zm2 3a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-5a1 1 0 0 0-1-1zm4 0a1 1 0 0 0-1 1v5a1 1 0 1 0 2 0v-5a1 1 0 0 0-1-1z"/>
+            </svg>
+          </button>
+        </div>
       </header>
 
-      <div id="chatMessages" class="chat-messages"></div>
+      <div class="conversation-layout">
+        <aside class="conversation-sidebar" aria-label="Conversation history">
+          <div class="conversation-sidebar-header">
+            <span>Conversations</span>
+          </div>
+          <div id="conversationList" class="conversation-list"></div>
+        </aside>
 
-      <form id="chatForm" class="chat-form">
-        <textarea
-          id="messageInput"
-          placeholder="Write a message..."
-          rows="1"
-          required
-        ></textarea>
+        <section class="conversation-main">
+          <div id="dropOverlay" class="drop-overlay" hidden>
+            <p>Drop files here</p>
+            <span>Text files are read into the message; images need a vision model</span>
+          </div>
 
-        <button id="sendButton" type="submit">
-          Send
-        </button>
-      </form>
+          <div id="chatMessages" class="chat-messages"></div>
+
+          <form id="chatForm" class="chat-form">
+            <div class="chat-form-main">
+              <div id="attachments" class="attachments" hidden></div>
+
+              <div class="chat-form-row">
+                <textarea
+                  id="messageInput"
+                  placeholder="Write a message or drop files..."
+                  rows="1"
+                ></textarea>
+
+                <button id="sendButton" type="submit">
+                  Send
+                </button>
+              </div>
+            </div>
+          </form>
+        </section>
+      </div>
     </section>
   </main>
 

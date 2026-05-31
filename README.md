@@ -5,13 +5,13 @@ A lightweight chatbot with a Node.js backend and a simple web UI. Use models **l
 ## Features
 
 - Web chat interface with conversation history
-- **Multiple providers** — Ollama (local) plus Groq, OpenAI, and Gemini when configured
+- **Multiple providers** - Ollama (local) plus Groq, OpenAI, and Gemini when configured
 - **Settings** panel: pick **provider** and **model**; choice is saved in the browser
 - External providers appear in the list **only** when their API key is set in `.env` (empty key = hidden)
-- **Ollama** — no API key; models from your machine (`ollama list`)
-- **Groq / OpenAI / Gemini** — cloud APIs; models loaded from the provider when the key is valid
+- **Ollama** - no API key; models from your machine (`ollama list`)
+- **Groq / OpenAI / Gemini** - cloud APIs; models loaded from the provider when the key is valid
 - Default Ollama model and URL via environment variables
-- **Desktop mode** — standalone window via Electron (no browser tab)
+- **Desktop mode** - standalone window via Electron (no browser tab)
 
 ## Quick start
 
@@ -27,7 +27,7 @@ npm install
 # 3. (Optional) Local models via Ollama
 ollama pull qwen2.5:1.5b
 
-# 4. (Optional) External provider — add a non-empty key to .env, e.g.:
+# 4. (Optional) External provider - add a non-empty key to .env, e.g.:
 #    GROQ_API_KEY=your-groq-key
 
 # 5. Start
@@ -75,10 +75,10 @@ npm run dev
 
 | Tool | Required for | Notes |
 |------|----------------|-------|
-| Node.js 18+ | Always | — |
+| Node.js 18+ | Always | - |
 | npm | Always | included with Node.js |
 | [Ollama](https://ollama.com/) | Local provider | Always listed in Settings; needs a pulled model to chat |
-| API key in `.env` | Groq / OpenAI / Gemini | `GROQ_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` — provider hidden if empty |
+| API key in `.env` | Groq / OpenAI / Gemini | `GROQ_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` - provider hidden if empty |
 
 Verify your setup:
 
@@ -112,8 +112,8 @@ flowchart LR
 3. You pick provider + model in Settings; the choice is sent to `POST /api/settings` and saved in the browser.
 4. Each chat message goes to `POST /api/chat` with the conversation history, provider, and model.
 5. The server routes the request through `providers.js`:
-   - **Ollama** — local API at `OLLAMA_URL` (no cloud, no API key)
-   - **Groq / OpenAI / Gemini** — external APIs using `GROQ_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` from `.env`
+   - **Ollama** - local API at `OLLAMA_URL` (no cloud, no API key)
+   - **Groq / OpenAI / Gemini** - external APIs using `GROQ_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` from `.env`
 6. The reply is returned to the UI and shown in the chat.
 
 In **desktop mode**, Electron opens the same UI in its own window instead of a browser tab.
@@ -136,7 +136,7 @@ Requirements are the same as the browser version: Ollama must be running and at 
 | Browser | `npm start` then open the URL | Your web browser |
 | Desktop | `npm run desktop` | Electron window |
 
-Do not run `npm start` and `npm run desktop` at the same time — both use the same `PORT` from `.env`.
+Do not run `npm start` and `npm run desktop` at the same time - both use the same `PORT` from `.env`.
 
 ### Desktop shortcut (Windows)
 
@@ -154,7 +154,7 @@ Requirements before using the shortcut:
 2. Ollama is running
 3. `.env` is configured (optional) and at least one Ollama model is installed
 
-The shortcut uses `scripts/start-desktop.vbs` under the hood. For debugging, you can run `scripts\start-desktop.bat` manually — it shows errors in a console window.
+The shortcut uses `scripts/start-desktop.vbs` under the hood. For debugging, you can run `scripts\start-desktop.bat` manually - it shows errors in a console window.
 
 ---
 
@@ -183,13 +183,13 @@ chatbot/
 
 ### 1. Install Ollama
 
-**Windows** — download from [ollama.com/download/windows](https://ollama.com/download/windows) or run in PowerShell:
+**Windows** - download from [ollama.com/download/windows](https://ollama.com/download/windows) or run in PowerShell:
 
 ```powershell
 irm https://ollama.com/install.ps1 | iex
 ```
 
-**macOS** — download from [ollama.com/download/mac](https://ollama.com/download/mac) or:
+**macOS** - download from [ollama.com/download/mac](https://ollama.com/download/mac) or:
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -201,7 +201,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-After installation, Ollama usually runs in the background. Confirm at [http://localhost:11434](http://localhost:11434) — you should see `Ollama is running`.
+After installation, Ollama usually runs in the background. Confirm at [http://localhost:11434](http://localhost:11434) - you should see `Ollama is running`.
 
 ### 2. Install a model
 
@@ -255,9 +255,11 @@ All settings are read from a `.env` file in the project root:
 | `PORT` | `3000` | Port for the web server |
 | `OLLAMA_URL` | `http://localhost:11434` | Ollama API base URL |
 | `OLLAMA_MODEL` | `llama3.1` | Default Ollama model on first launch (optional) |
-| `GROQ_API_KEY` | — | Enables **Groq** in Settings when set |
-| `OPENAI_API_KEY` | — | Enables **OpenAI** in Settings when set |
-| `GEMINI_API_KEY` | — | Enables **Gemini** in Settings when set |
+| `OLLAMA_CHAT_TIMEOUT_MS` | `600000` (10 min) | Max wait for Ollama chat replies; increase for large local models |
+| `CLOUD_CHAT_TIMEOUT_MS` | `120000` (2 min) | Max wait for Groq / OpenAI / Gemini replies |
+| `GROQ_API_KEY` | - | Enables **Groq** in Settings when set |
+| `OPENAI_API_KEY` | - | Enables **OpenAI** in Settings when set |
+| `GEMINI_API_KEY` | - | Enables **Gemini** in Settings when set |
 
 Example `.env`:
 
@@ -369,7 +371,7 @@ Sends a message and returns the model reply.
 
 ## Recommended models
 
-Start with **`qwen2.5:1.5b`** — a good balance of speed, memory use, and quality on modest hardware.
+Start with **`qwen2.5:1.5b`** - a good balance of speed, memory use, and quality on modest hardware.
 
 | Category | Model | Size | Notes |
 |----------|-------|------|-------|
@@ -433,6 +435,16 @@ ollama pull qwen2.5:1.5b
 ```
 
 Pick the model from the header dropdown, or install it first with `ollama pull`. Model names must match `ollama list` exactly (including the tag, e.g. `:1.5b`).
+
+### "Request timed out" with large Ollama models
+
+Large local models (7B+) can take several minutes on modest hardware. The default Ollama chat timeout is **10 minutes**. To wait longer, add to `.env`:
+
+```env
+OLLAMA_CHAT_TIMEOUT_MS=900000
+```
+
+(900000 = 15 minutes.) Restart the server after changing `.env`.
 
 ### Responses are very slow
 

@@ -8,7 +8,8 @@ import {
   fetchProviderSnapshot,
   getEnabledProviders,
   getProviderLabel,
-  isProviderEnabled
+  isProviderEnabled,
+  supportsVision
 } from './providers.js';
 
 dotenv.config({ override: true });
@@ -25,21 +26,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-function buildChatMessages(history, message) {
-  return [
-    {
-      role: 'system',
-      content: 'You are a helpful AI chatbot. Answer clearly and concisely.'
-    },
-    ...history,
-    {
-      role: 'user',
-      content: message
-    }
-  ];
+function normalizeAttachments(attachments) {
+  if (!Array.isArray(attachments)) {
+    return [];
+  }
+
+  return attachments
+    .filter((attachment) => attachment && typeof attachment === 'object')
+    .map((attachment) => ({
+      kind: attachment.kind,
+      name: typeof attachment.name === 'string' ? attachment.name : 'file',
+      content: attachment.content,
+      dataUrl: attachment.dataUrl,
+      mimeType: attachment.mimeType
+    }));
 }
 
 app.get('/api/health', async (req, res) => {
@@ -60,6 +63,7 @@ app.get('/api/health', async (req, res) => {
       ok: providers.some((provider) => provider.connected),
       provider: currentProvider,
       model: currentModel,
+      visionSupported: supportsVision(currentProvider, currentModel),
       defaults: {
         provider: 'ollama',
         model: DEFAULT_MODEL
@@ -126,10 +130,11 @@ app.post('/api/model', (req, res) => {
 app.post('/api/chat', async (req, res) => {
   try {
     const {
-      message,
+      message = '',
       history = [],
       model,
-      provider
+      provider,
+      attachments = []
     } = req.body;
 
     const activeProvider =
@@ -138,10 +143,12 @@ app.post('/api/chat', async (req, res) => {
         : currentProvider;
     const activeModel =
       typeof model === 'string' && model.trim() ? model.trim() : currentModel;
+    const normalizedAttachments = normalizeAttachments(attachments);
+    const textMessage = typeof message === 'string' ? message : '';
 
-    if (!message || typeof message !== 'string') {
+    if (!textMessage.trim() && !normalizedAttachments.length) {
       return res.status(400).json({
-        error: 'Message is required'
+        error: 'Message or attachments are required'
       });
     }
 
@@ -151,8 +158,20 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    const messages = buildChatMessages(history, message);
-    const reply = await chatWithProvider(activeProvider, activeModel, messages);
+    const cleanHistory = history.filter(
+      (entry) =>
+        entry &&
+        (entry.role === 'user' || entry.role === 'assistant') &&
+        typeof entry.content === 'string'
+    );
+
+    const reply = await chatWithProvider(
+      activeProvider,
+      activeModel,
+      cleanHistory,
+      textMessage,
+      normalizedAttachments
+    );
 
     res.json({ reply });
   } catch (error) {
